@@ -1,23 +1,25 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
+import { routes } from "./features/routes";
+import { notFoundHandler } from "./middleware/not-found.middleware";
 
 dotenv.config();
-
-const app:Express = express();
 const port = process.env.PORT;
 
-app.get('/',(req,res)=>{
-    res.send('Hello Backend')
-})
+if (!port) {
+  throw new Error("Missing required env variables");
+}
 
-app.get('/demo',(req,res)=>{
-    res.send('Hello Demo')
-})
+const app: Express = express();
 
-app.get('/json',(req,res)=>{
-    res.json({name:'rakib',age:27,gender:'male'})
-})
+app.use(express.json());
 
-app.listen(port,()=>{
-    console.log(`listening the app from port:${port}`)
-})
+// register routes
+app.use(routes);
+
+//register middleware
+app.use(notFoundHandler);
+
+app.listen(port, () => {
+  console.log(`listening the app from port:${port}`);
+});
