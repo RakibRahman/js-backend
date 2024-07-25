@@ -23,16 +23,13 @@ export const deleteItem = (id: number) => {
 };
 
 export const addItem = (name: string, price: number) => {
-  const isValidPayload = name && price && typeof price === "number"; //validate with zod
-  if (!isValidPayload) return null;
-
   const item = { id: items.length + 1, name, price };
   items.push(item);
 
   return item;
 };
 
-export const updateItem = (id: number, payload: Item) => {
+export const updateItem = (id: number, payload: Omit<Item, "id">) => {
   const itemIndex = items.findIndex((i) => i.id === id);
 
   if (itemIndex === -1) return null;

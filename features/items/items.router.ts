@@ -1,4 +1,6 @@
 import express, { Request, Response, Router } from "express";
+import { validate } from "../../middleware/validation.middleware";
+import { idNumberRequestSchema } from "../Schema";
 import {
   addItem,
   deleteItem,
@@ -6,7 +8,7 @@ import {
   getSingleItem,
   updateItem,
 } from "./items.service";
-import { log } from "console";
+import { itemPOSTRequestSchema, itemPUTRequestSchema } from "./items.schema";
 
 export const itemsRouter: Router = express.Router();
 
@@ -16,41 +18,56 @@ itemsRouter.get("/", async (req: Request, res: Response) => {
   res.json(items);
 });
 
-itemsRouter.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  const data = await getSingleItem(id);
-  log({id})
-  data
-    ? res.json(data)
-    : res.status(404).json({ message: "No such item", status: 404 });
-});
+itemsRouter.get(
+  "/:id",
+  validate(idNumberRequestSchema),
+  async (req: Request, res: Response) => {
+    const data = idNumberRequestSchema.parse(req);
+    const id = data.params.id;
+    const item = await getSingleItem(id);
 
-itemsRouter.post("/", async (req: Request, res: Response) => {
-  //validate with zod
-  const {
-    body: { name, price },
-  } = req;
+    item
+      ? res.json(item)
+      : res.status(404).json({ message: "No such item", status: 404 });
+  }
+);
 
-  const data = await addItem(name, price);
-  data
-    ? res.json(data)
-    : res.status(500).json({
-        message: "Creation failed",
-        details: "Name and price is required. Price must be number",
-        status: 500,
-      });
-});
+itemsRouter.post(
+  "/",
+  validate(itemPOSTRequestSchema),
+  async (req: Request, res: Response) => {
+    const data = itemPOSTRequestSchema.parse(req);
 
-itemsRouter.put("/:id", async (req: Request, res: Response) => {
-  //validate with zod
-  const { params, body } = req;
-  const itemId = parseInt(params.id);
-  const data = updateItem(itemId, body);
+    const {
+      body: { name, price },
+    } = data;
 
-  data
-    ? res.json(data)
-    : res.status(404).json({ message: "No such item", status: 404 });
-});
+    const item = await addItem(name, price);
+    item
+      ? res.status(201).json(item)
+      : res.status(500).json({
+          message: "Creation failed",
+        });
+  }
+);
+
+itemsRouter.put(
+  "/:id",
+  validate(itemPUTRequestSchema),
+  async (req: Request, res: Response) => {
+    const data = itemPUTRequestSchema.parse(req);
+
+    const {
+      params: { id },
+      body,
+    } = data;
+    const item = updateItem(id, body);
+
+    item
+      ? res.json(item)
+      : res.status(404).json({ message: "No such item", status: 404 });
+  }
+);
 
 itemsRouter.delete("/:id", async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);

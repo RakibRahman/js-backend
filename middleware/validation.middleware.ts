@@ -1,4 +1,6 @@
+import { log } from "console";
 import { NextFunction, Request, Response } from "express";
+import { AnyZodObject } from "zod";
 
 export const paginationValidationHandler = (
   req: Request,
@@ -7,7 +9,7 @@ export const paginationValidationHandler = (
 ) => {
   const { query } = req;
   const { take, skip } = query;
-  //validate with zod
+
   const isValidTake = take && typeof take === "string" && parseInt(take) > 0;
   const isValidSkip = skip && typeof skip === "string" && parseInt(skip) > -1;
 
@@ -29,3 +31,30 @@ export const paginationValidationHandler = (
     });
   }
 };
+
+export const validate =
+  (schema: AnyZodObject) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { params, query, body } = req;
+    const validationResult = await schema.safeParseAsync({
+      body,
+      query,
+      params,
+    });
+
+    if (validationResult.success) {
+      return next();
+    }
+
+    if (validationResult.error) {
+      const issues = validationResult.error.issues;
+      log({ issues });
+      res.status(400).json({
+        message: "Validation Failed!",
+        details: issues.map((issue) => ({
+          path: issue.path.join(": "),
+          message: issue.message,
+        })),
+      });
+    }
+  };

@@ -1,5 +1,12 @@
 import express, { Request, Response, Router } from "express";
-import { paginationValidationHandler } from "../../middleware/validation.middleware";
+import {
+  validate
+} from "../../middleware/validation.middleware";
+import { idNumberRequestSchema, pagingRequestSchema } from "../Schema";
+import {
+  itemsOrderPostReqSchema,
+  orderStatusPutRequestSchema,
+} from "./orders.schema";
 import {
   addItemsToOrder,
   deleteItemFromOrder,
@@ -12,49 +19,59 @@ export const ordersRouter: Router = express.Router();
 
 ordersRouter.get(
   "/",
-  paginationValidationHandler,
+  validate(pagingRequestSchema),
   async (req: Request, res: Response) => {
-    const { query } = req;
-    const { take, skip } = query;
-    //validate with zod
-    const isValidTake = take && typeof take === "string" && parseInt(take) > 0;
-    const isValidSkip = skip && typeof skip === "string" && parseInt(skip) > -1;
-
-    if (isValidSkip && isValidTake) {
-      const orders = await getAllOrders(parseInt(take), parseInt(skip));
-      res.json(orders);
-    }
+    const data = pagingRequestSchema.parse(req);
+    const { take, skip } = data.query;
+    const orders = await getAllOrders(take, skip);
+    res.json(orders);
   }
 );
 
-ordersRouter.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  const data = await getSingleOrder(id);
+ordersRouter.get(
+  "/:id",
+  validate(idNumberRequestSchema),
+  async (req: Request, res: Response) => {
+    const id = idNumberRequestSchema.parse(req).params.id;
+    const data = await getSingleOrder(id);
 
-  data
-    ? res.json(data)
-    : res.status(404).json({ message: "No such order", status: 404 });
-});
+    data
+      ? res.json(data)
+      : res.status(404).json({ message: "No such order", status: 404 });
+  }
+);
 
-ordersRouter.post("/:id/items", async (req: Request, res: Response) => {
-  const { body, params } = req;
-  const orderId = parseInt(params.id);
-  const data = await addItemsToOrder(orderId, body);
-  data
-    ? res.json(data)
-    : res.status(404).json({ message: "No such order", status: 404 });
-});
+ordersRouter.post(
+  "/:id/items",
+  validate(itemsOrderPostReqSchema),
+  async (req: Request, res: Response) => {
+    const {
+      body,
+      params: { id },
+    } = itemsOrderPostReqSchema.parse(req);
+    const data = await addItemsToOrder(id, body);
+    data
+      ? res.json(data)
+      : res.status(404).json({ message: "No such order", status: 404 });
+  }
+);
 
-ordersRouter.patch("/:id", async (req: Request, res: Response) => {
-  //validate with zod
-  const { params, body } = req;
-  const orderId = parseInt(params.id);
-  const data = updateOrder(orderId, body);
+ordersRouter.patch(
+  "/:id",
+  validate(orderStatusPutRequestSchema),
+  async (req: Request, res: Response) => {
+    const {
+      params: { id },
+      body,
+    } = orderStatusPutRequestSchema.parse(req);
 
-  data
-    ? res.json(data)
-    : res.status(404).json({ message: "No such order", status: 404 });
-});
+    const data = updateOrder(id, body as never);
+
+    data
+      ? res.json(data)
+      : res.status(404).json({ message: "No such order", status: 404 });
+  }
+);
 
 ordersRouter.delete(
   "/:id/items/:itemId",
