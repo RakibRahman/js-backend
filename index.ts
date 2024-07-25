@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import { routes } from "./features/routes";
 import { notFoundHandler } from "./middleware/not-found.middleware";
+import { errorHandler } from "./middleware/error.middleware";
 
 dotenv.config();
 const port = process.env.PORT;
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(routes);
 
 //register middleware
+app.use(errorHandler);
 app.use(notFoundHandler);
 
 app.listen(port, () => {

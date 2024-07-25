@@ -9,13 +9,23 @@ import {
   updateItem,
 } from "./items.service";
 import { itemPOSTRequestSchema, itemPUTRequestSchema } from "./items.schema";
+import { create } from "xmlbuilder2";
 
 export const itemsRouter: Router = express.Router();
 
 itemsRouter.get("/", async (req: Request, res: Response) => {
   const items = await getAllItems();
 
-  res.json(items);
+  if (req.headers["accept"] === "application/xml") {
+    const root = create().ele("items");
+
+    items.forEach((itm) => {
+      root.ele("item", itm);
+    });
+    res.status(200).send(root.end({ prettyPrint: true }));
+  } else {
+    res.json(items);
+  }
 });
 
 itemsRouter.get(
