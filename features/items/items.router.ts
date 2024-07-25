@@ -19,7 +19,7 @@ itemsRouter.get("/", async (req: Request, res: Response) => {
 itemsRouter.get("/:id", async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
   const data = await getSingleItem(id);
-
+  log({id})
   data
     ? res.json(data)
     : res.status(404).json({ message: "No such item", status: 404 });
