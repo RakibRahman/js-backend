@@ -1,8 +1,9 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express} from "express";
 import dotenv from "dotenv";
 import { routes } from "./features/routes";
 import { notFoundHandler } from "./middleware/not-found.middleware";
 import { errorHandler } from "./middleware/error.middleware";
+import cors from "cors";
 
 dotenv.config();
 const port = process.env.PORT;
@@ -14,6 +15,8 @@ if (!port) {
 const app: Express = express();
 
 app.use(express.json());
+
+app.use(cors());
 
 // register routes
 app.use(routes);
