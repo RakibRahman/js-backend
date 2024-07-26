@@ -58,7 +58,7 @@ itemsRouter.post(
     // const item = await addItem(name, price);
 
     const item = await pool.query(
-      `INSERT INTO dummy (name,value) VALUES($1,$2)`,
+      `INSERT INTO dummy (name,price) VALUES($1,$2)`,
       [name, price]
     );
 
