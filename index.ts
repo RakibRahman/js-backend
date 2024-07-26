@@ -4,6 +4,7 @@ import { routes } from "./features/routes";
 import { notFoundHandler } from "./middleware/not-found.middleware";
 import { errorHandler } from "./middleware/error.middleware";
 import cors from "cors";
+import { initializeDatabase } from "./db";
 
 dotenv.config();
 const port = process.env.PORT;
@@ -11,6 +12,12 @@ const port = process.env.PORT;
 if (!port) {
   throw new Error("Missing required env variables");
 }
+
+initializeDatabase().then(() => {
+  console.log('Database initialized');
+}).catch(err => {
+  console.error('Failed to initialize database:', err);
+});
 
 const app: Express = express();
 

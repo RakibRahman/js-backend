@@ -11,13 +11,13 @@ import {
 import { itemPOSTRequestSchema, itemPUTRequestSchema } from "./items.schema";
 import { create } from "xmlbuilder2";
 import { pool } from "../../db";
+import { log } from "console";
 
 export const itemsRouter: Router = express.Router();
 
 itemsRouter.get("/", async (req: Request, res: Response) => {
   const items = await getAllItems();
-  const dummyData = await pool.query('SELECT * FROM dummy')
-
+  const dummyData = await pool.query("SELECT * FROM dummy");
 
   if (req.headers["accept"] === "application/xml") {
     const root = create().ele("items");
@@ -55,9 +55,16 @@ itemsRouter.post(
       body: { name, price },
     } = data;
 
-    const item = await addItem(name, price);
+    // const item = await addItem(name, price);
+
+    const item = await pool.query(
+      `INSERT INTO dummy (name,value) VALUES($1,$2)`,
+      [name, price]
+    );
+
+  
     item
-      ? res.status(201).json(item)
+      ? res.status(201).json({ name, price })
       : res.status(500).json({
           message: "Creation failed",
         });
