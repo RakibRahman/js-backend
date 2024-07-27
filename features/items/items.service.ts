@@ -1,42 +1,51 @@
+import { pool, query } from "../../db";
+import { Tables } from "../../db/table";
 import { Item } from "../types";
 
-const items: Item[] = [
-  { id: 1, name: "Item 1", price: 20 },
-  { id: 2, name: "Item 2", price: 15 },
-  { id: 3, name: "Item 3", price: 30 },
-  { id: 4, name: "Item 4", price: 14 },
-  { id: 5, name: "Item 5", price: 16 },
-];
 
-export const getAllItems = () => {
-  return items;
+export const getAllItems = async () => {
+  const items = await query(`SELECT * FROM ${Tables.ITEMS}`);
+  return items.rows;
 };
 
-export const getSingleItem = (id: number) => {
-  return items.find((itm) => itm.id === id) ?? null;
+export const getSingleItem = async (id: number) => {
+  return (
+    (await query(`SELECT * FROM ${Tables.ITEMS} WHERE id = $1`, [id]))
+      .rows[0] ?? null
+  );
 };
 
-export const deleteItem = (id: number) => {
-  const item = items.find((it) => it.id === id);
+export const deleteItem = async (id: number) => {
+  const sql = `
+  DELETE FROM ${Tables.ITEMS}
+  WHERE id = $1
+  RETURNING *;
+              `;
+  const item = await query(sql, [id]);
 
-  return item ? items.filter((item) => item.id !== id) : null;
+  return item ? item.rows[0] : null;
 };
 
-export const addItem = (name: string, price: number) => {
-  const item = { id: items.length + 1, name, price };
-  items.push(item);
-
-  return item;
+export const addItem = async (name: string, price: number) => {
+  const sql = `INSERT INTO ${Tables.ITEMS} (name,price) VALUES($1,$2) RETURNING *;`;
+  const item = await pool.query(sql, [name, price]);
+  return item.rows.length ? item.rows[0] : null;
 };
 
-export const updateItem = (id: number, payload: Omit<Item, "id">) => {
-  const itemIndex = items.findIndex((i) => i.id === id);
+export const updateItem = async (id: number, payload: Partial<Item>) => {
+  const data = Object.values(payload);
 
-  if (itemIndex === -1) return null;
+  const columnsToUpdate = Object.keys(payload).map(
+    (col, i) => `${col}=$${i + 1}`
+  );
 
-  const data = { ...items[itemIndex], ...payload };
+  const sql = `UPDATE ${
+    Tables.ITEMS
+  } SET ${columnsToUpdate.toString()} WHERE id=$${
+    columnsToUpdate.length + 1
+  } RETURNING *;`;
 
-  items[itemIndex] = data;
+  const item = await pool.query(sql, [...data, id]);
 
-  return data;
+  return item.rows.length ? item.rows[0] : null;
 };

@@ -20,7 +20,7 @@ export const initializeDatabase = async () => {
     console.log('Database connection successful');
 
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS dummy (
+      CREATE TABLE IF NOT EXISTS items (
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) UNIQUE NOT NULL,
           price INT 
@@ -33,3 +33,5 @@ export const initializeDatabase = async () => {
     process.exit(1); // Exit the application if connection fails
   }
 }
+
+export const query = (text:string, params?:any[]) => pool.query(text, params)

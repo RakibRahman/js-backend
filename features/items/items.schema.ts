@@ -12,5 +12,5 @@ export const itemPOSTRequestSchema = z.object({
     body:itemDTO
 });
 
-export const itemPUTRequestSchema = idNumberRequestSchema.merge(itemPOSTRequestSchema);
+export const itemPUTRequestSchema = idNumberRequestSchema.merge(itemPOSTRequestSchema.deepPartial());
 

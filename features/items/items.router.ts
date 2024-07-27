@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from "express";
+import express, { NextFunction, Request, Response, Router } from "express";
 import { validate } from "../../middleware/validation.middleware";
 import { idNumberRequestSchema } from "../Schema";
 import {
@@ -15,21 +15,27 @@ import { log } from "console";
 
 export const itemsRouter: Router = express.Router();
 
-itemsRouter.get("/", async (req: Request, res: Response) => {
-  const items = await getAllItems();
-  const dummyData = await pool.query("SELECT * FROM dummy");
+itemsRouter.get(
+  "/",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const items = await getAllItems();
 
-  if (req.headers["accept"] === "application/xml") {
-    const root = create().ele("items");
+      if (req.headers["accept"] === "application/xml" && items) {
+        const root = create().ele("items");
 
-    items.forEach((itm) => {
-      root.ele("item", itm);
-    });
-    res.status(200).send(root.end({ prettyPrint: true }));
-  } else {
-    res.json(dummyData.rows);
+        items.forEach((itm) => {
+          root.ele("item", itm);
+        });
+        res.status(200).send(root.end({ prettyPrint: true }));
+      } else {
+        res.json(items);
+      }
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 itemsRouter.get(
   "/:id",
@@ -38,7 +44,6 @@ itemsRouter.get(
     const data = idNumberRequestSchema.parse(req);
     const id = data.params.id;
     const item = await getSingleItem(id);
-
     item
       ? res.json(item)
       : res.status(404).json({ message: "No such item", status: 404 });
@@ -48,44 +53,44 @@ itemsRouter.get(
 itemsRouter.post(
   "/",
   validate(itemPOSTRequestSchema),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const data = itemPOSTRequestSchema.parse(req);
 
     const {
       body: { name, price },
     } = data;
 
-    // const item = await addItem(name, price);
-
-    const item = await pool.query(
-      `INSERT INTO dummy (name,price) VALUES($1,$2)`,
-      [name, price]
-    );
-
-  
-    item
-      ? res.status(201).json({ name, price })
-      : res.status(500).json({
-          message: "Creation failed",
-        });
+    try {
+      const item = await addItem(name, price);
+      res.status(201).json(item);
+    } catch (error) {
+      next({ code: error });
+    }
   }
 );
 
 itemsRouter.put(
   "/:id",
   validate(itemPUTRequestSchema),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response,next:NextFunction) => {
     const data = itemPUTRequestSchema.parse(req);
 
     const {
       params: { id },
       body,
     } = data;
-    const item = updateItem(id, body);
 
-    item
+    try {
+      
+      const item = await updateItem(id, body!);
+      item
       ? res.json(item)
       : res.status(404).json({ message: "No such item", status: 404 });
+    } catch (error) {
+      next(error)
+    }
+
+
   }
 );
 

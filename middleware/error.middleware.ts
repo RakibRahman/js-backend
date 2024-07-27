@@ -9,5 +9,5 @@ export const errorHandler = (
   const status = 500;
   const message = "Internal Server Error";
 
-  response.status(status).json({ status, message });
+  response.status(status).json({ status, message,error });
 };
