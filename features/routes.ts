@@ -24,7 +24,7 @@ routes.get("/", (req, res) => {
   res.status(200).send("<h1>Server is ready!!</h1>");
 });
 
-routes.get("/delete/:table", async (req, res) => {
+routes.delete("/delete/:table", async (req, res) => {
   const {
     params: { table },
   } = req;

@@ -23,7 +23,8 @@ export const initializeDatabase = async () => {
       CREATE TABLE IF NOT EXISTS items (
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) UNIQUE NOT NULL,
-          price INT 
+          price INT,
+          category VARCHAR(255) DEFAULT NULL 
       );
 
     `);

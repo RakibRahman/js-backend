@@ -1,11 +1,28 @@
+import { log } from "console";
 import { pool, query } from "../../db";
 import { Tables } from "../../db/table";
 import { Item } from "../types";
 
+export const getAllItems = async (page: number, size: number) => {
+  const offset = (page - 1) * size;
 
-export const getAllItems = async () => {
-  const items = await query(`SELECT * FROM ${Tables.ITEMS}`);
-  return items.rows;
+  const items = await query(
+    `SELECT * FROM ${Tables.ITEMS} limit $1 offset $2`,
+    [size, offset]
+  );
+  const totalRows = await query(`SELECT COUNT(*) FROM ${Tables.ITEMS}`);
+  const totalPages = Math.ceil(totalRows.rows[0]?.count / size);
+  log({ page, offset, totalPages });
+
+  return {
+    data: items.rows,
+    total: totalRows.rows[0]?.count ?? items.rowCount,
+    nextPage:
+      totalPages === page ? null : `/api/items?page=${page + 1}&size=${size}`,
+    prevPage:
+      page === 1 ? null : `/api/items?page=${page ? page - 1 : 1}&size=${size}`,
+    totalPages,
+  };
 };
 
 export const getSingleItem = async (id: number) => {

@@ -8,7 +8,11 @@ import {
   getSingleItem,
   updateItem,
 } from "./items.service";
-import { itemPOSTRequestSchema, itemPUTRequestSchema } from "./items.schema";
+import {
+  itemPagingRequestSchema,
+  itemPOSTRequestSchema,
+  itemPUTRequestSchema,
+} from "./items.schema";
 import { create } from "xmlbuilder2";
 import { pool } from "../../db";
 import { log } from "console";
@@ -17,14 +21,21 @@ export const itemsRouter: Router = express.Router();
 
 itemsRouter.get(
   "/",
+  validate(itemPagingRequestSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const items = await getAllItems();
+      const {
+        query: { page, size },
+      } = itemPagingRequestSchema.parse(req);
+
+
+
+      const items = await getAllItems(page,size);
 
       if (req.headers["accept"] === "application/xml" && items) {
         const root = create().ele("items");
 
-        items.forEach((itm) => {
+        items.data.forEach((itm) => {
           root.ele("item", itm);
         });
         res.status(200).send(root.end({ prettyPrint: true }));
@@ -72,7 +83,7 @@ itemsRouter.post(
 itemsRouter.put(
   "/:id",
   validate(itemPUTRequestSchema),
-  async (req: Request, res: Response,next:NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const data = itemPUTRequestSchema.parse(req);
 
     const {
@@ -81,16 +92,13 @@ itemsRouter.put(
     } = data;
 
     try {
-      
       const item = await updateItem(id, body!);
       item
-      ? res.json(item)
-      : res.status(404).json({ message: "No such item", status: 404 });
+        ? res.json(item)
+        : res.status(404).json({ message: "No such item", status: 404 });
     } catch (error) {
-      next(error)
+      next(error);
     }
-
-
   }
 );
 
