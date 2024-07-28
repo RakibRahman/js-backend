@@ -4,11 +4,13 @@ import { customersRouter } from "./customers/customers.router";
 import { ordersRouter } from "./orders/orders.route";
 import { query } from "../db";
 import { log } from "console";
+import { adminsRouter } from "./admins/admins.router";
 
 const ROUTE_PATHS = {
   ITEMS: "/items",
   CUSTOMERS: "/customers",
   ORDERS: "/orders",
+  ADMINS:'/admins'
 };
 
 const apiRouter: Router = express.Router();
@@ -16,6 +18,7 @@ const apiRouter: Router = express.Router();
 apiRouter.use(ROUTE_PATHS.ITEMS, itemsRouter);
 apiRouter.use(ROUTE_PATHS.CUSTOMERS, customersRouter);
 apiRouter.use(ROUTE_PATHS.ORDERS, ordersRouter);
+apiRouter.use(ROUTE_PATHS.ADMINS,adminsRouter);
 
 export const routes: Router = express.Router();
 

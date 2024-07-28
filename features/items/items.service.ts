@@ -18,7 +18,7 @@ export const getAllItems = async (page: number, size: number) => {
     data: items.rows,
     total: totalRows.rows[0]?.count ?? items.rowCount,
     nextPage:
-      totalPages === page ? null : `/api/items?page=${page + 1}&size=${size}`,
+      totalPages === page && totalPages ===0 ? null : `/api/items?page=${page + 1}&size=${size}`,
     prevPage:
       page === 1 ? null : `/api/items?page=${page ? page - 1 : 1}&size=${size}`,
     totalPages,
