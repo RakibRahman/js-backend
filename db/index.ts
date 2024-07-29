@@ -34,8 +34,6 @@ export const initializeDatabase = async () => {
     image_url TEXT,
     role TEXT
 );
-
-
     `);
     console.log("Tables initialized successfully");
   } catch (err) {
