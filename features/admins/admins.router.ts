@@ -1,23 +1,54 @@
-import express, { Router, Express, Request, Response } from "express";
+import express, {
+  Router,
+  Express,
+  Request,
+  Response,
+  NextFunction,
+} from "express";
 import { query } from "../../db";
 import { validate } from "../../middleware/validation.middleware";
-import { adminRegistrationPostSchema } from "./admin.schema";
+import { adminLoginSchema, adminRegistrationPostSchema } from "./admin.schema";
+import { log } from "console";
+import { hashPassword } from "../utils/hashPassword";
+import { adminLogin, adminRegistration } from "./admins.service";
 
 export const adminsRouter: Router = express.Router();
 
 adminsRouter.get("/", async (req: Request, res: Response, next) => {
   try {
-    const admins = await query(`SELECT * FROM admins`);
+    const admins = await query(`SELECT id,name,role,email FROM admins;`);
     res.status(200).json(admins.rows);
   } catch (error) {
     next(error);
   }
 });
 
+adminsRouter.post(
+  "/register",
+  validate(adminRegistrationPostSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { body } = adminRegistrationPostSchema.parse(req);
+    try {
+       await adminRegistration(body);
+     res.status(201).send("Registration Success");
+    } catch (error) {
+      res.status(401);
+      next(error);
+    }
+  }
+);
 
-adminsRouter.post('/register',validate(adminRegistrationPostSchema), async (req: Request, res: Response, next)=>{
-  const {body} = adminRegistrationPostSchema.parse(req);
-  const {name,email,password,role} = body;
-
-
-})
+adminsRouter.post(
+  "/login",
+  validate(adminLoginSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { body } = adminLoginSchema.parse(req);
+    try {
+      const data = await adminLogin(body);
+      data && res.status(201).json({ message: "Login Success", data });
+    } catch (error) {
+      res.status(401);
+      next(error);
+    }
+  }
+);

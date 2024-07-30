@@ -1,10 +1,9 @@
-import express, { Express} from "express";
-import dotenv from "dotenv";
-import { routes } from "./features/routes";
-import { notFoundHandler } from "./middleware/not-found.middleware";
-import { errorHandler } from "./middleware/error.middleware";
 import cors from "cors";
-import { initializeDatabase } from "./db";
+import dotenv from "dotenv";
+import express, { Express } from "express";
+import { routes } from "./features/routes";
+import { errorHandler } from "./middleware/error.middleware";
+import { notFoundHandler } from "./middleware/not-found.middleware";
 
 dotenv.config();
 const port = process.env.PORT;
@@ -12,12 +11,6 @@ const port = process.env.PORT;
 if (!port) {
   throw new Error("Missing required env variables");
 }
-
-initializeDatabase().then(() => {
-  console.log('Database initialized');
-}).catch(err => {
-  console.error('Failed to initialize database:', err);
-});
 
 const app: Express = express();
 
@@ -29,8 +22,8 @@ app.use(cors());
 app.use(routes);
 
 //register middleware
-app.use(errorHandler);
 app.use(notFoundHandler);
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`listening the app from port:${port}`);

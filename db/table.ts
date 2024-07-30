@@ -1,4 +1,4 @@
 export const Tables = {
   ITEMS: "items",
-  USERS:'users'
+  ADMINS:'admins'
 };

@@ -48,7 +48,6 @@ export const validate =
 
     if (validationResult.error) {
       const issues = validationResult.error.issues;
-      log({ issues });
       res.status(400).json({
         message: "Validation Failed!",
         details: issues.map((issue) => ({
