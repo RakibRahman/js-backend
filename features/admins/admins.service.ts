@@ -5,8 +5,6 @@ import { hashPassword, isValidPassword } from "../utils/hashPassword";
 import { Admin } from "./admin.schema";
 import { generateJWT } from "../utils/generateToken";
 
-
-
 export const adminRegistration = async (payload: Admin) => {
   const { name, email, password, role } = payload;
   const securedPassword = await hashPassword(password);
@@ -38,16 +36,13 @@ export const adminLogin = async (payload: Omit<Admin, "role" | "name">) => {
 
     const verifyPassword = await isValidPassword(user.password, password);
 
-    if(verifyPassword){
-      const data = {id:user.id,role:user.role,email,name:user.name}
-      const token = generateJWT(data)
-      return {data,token}
-    }else {
+    if (verifyPassword) {
+      const data = { id: user.id, role: user.role, email, name: user.name };
+      const token = generateJWT(data);
+      return { data, token };
+    } else {
       throw Error("Password does not match!");
     }
-
-    
-
   } catch (error) {
     log("error:::>", error);
     throw error;
