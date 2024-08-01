@@ -1,15 +1,12 @@
 import express, {
-  Router,
-  Express,
+  NextFunction,
   Request,
   Response,
-  NextFunction,
+  Router
 } from "express";
 import { query } from "../../db";
 import { validate } from "../../middleware/validation.middleware";
 import { adminLoginSchema, adminRegistrationPostSchema } from "./admin.schema";
-import { log } from "console";
-import { hashPassword } from "../utils/hashPassword";
 import { adminLogin, adminRegistration } from "./admins.service";
 
 export const adminsRouter: Router = express.Router();
@@ -45,7 +42,8 @@ adminsRouter.post(
     const { body } = adminLoginSchema.parse(req);
     try {
       const data = await adminLogin(body);
-      data && res.status(201).json({ message: "Login Success", data });
+    
+    data &&  res.redirect('/welcome')
     } catch (error) {
       res.status(401);
       next(error);

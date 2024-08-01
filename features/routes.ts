@@ -27,6 +27,10 @@ routes.get("/", (req, res) => {
   res.status(200).send("<h1>Server is ready!!</h1>");
 });
 
+
+routes.get('/welcome',async (req,res)=>{
+  res.send(`<h1>welcome ${JSON.stringify(req)}</h1>`)
+})
 routes.get("/setup", async (req, res) => {
   initializeDatabase()
     .then(() => {
