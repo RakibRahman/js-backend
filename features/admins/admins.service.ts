@@ -39,7 +39,8 @@ export const adminLogin = async (payload: Omit<Admin, "role" | "name">) => {
     if (verifyPassword) {
       const data = { id: user.id, role: user.role, email, name: user.name };
       const token = generateJWT(data);
-      return { data, token };
+      return {
+        token };
     } else {
       throw Error("Password does not match!");
     }

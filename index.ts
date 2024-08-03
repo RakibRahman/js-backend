@@ -4,6 +4,8 @@ import express, { Express } from "express";
 import { routes } from "./features/routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { notFoundHandler } from "./middleware/not-found.middleware";
+import cookieParser from 'cookie-parser';
+
 
 dotenv.config();
 const port = process.env.PORT;
@@ -15,8 +17,10 @@ if (!port) {
 const app: Express = express();
 
 app.use(express.json());
-
-app.use(cors());
+app.use(cors({
+  credentials: true
+}));
+app.use(cookieParser());
 // app.use(express.b)
 
 // register routes
