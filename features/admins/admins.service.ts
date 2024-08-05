@@ -40,7 +40,8 @@ export const adminLogin = async (payload: Omit<Admin, "role" | "name">) => {
       const data = { id: user.id, role: user.role, email, name: user.name };
       const token = generateJWT(data);
       return {
-        token };
+        token,
+      };
     } else {
       throw Error("Password does not match!");
     }
@@ -49,3 +50,18 @@ export const adminLogin = async (payload: Omit<Admin, "role" | "name">) => {
     throw error;
   }
 };
+
+
+export const getAdmin =async (id:string)=>{
+  const sql = `SELECT id,name,email FROM ${Tables.ADMINS} WHERE id=$1;`;
+
+  try {
+    const admin = await query(sql, [id]);
+    const user = admin.rows[0];
+
+    return user;
+    
+  } catch (error) {
+    throw error;
+  }
+}

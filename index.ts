@@ -5,7 +5,10 @@ import { routes } from "./features/routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { notFoundHandler } from "./middleware/not-found.middleware";
 import cookieParser from 'cookie-parser';
-
+import passport from 'passport'
+import "./middleware/passport-local.middleware";
+const session = require("express-session");
+const store = new session.MemoryStore();
 
 dotenv.config();
 const port = process.env.PORT;
@@ -20,13 +23,26 @@ app.use(express.json());
 app.use(cors({
   credentials: true
 }));
-app.use(cookieParser());
-// app.use(express.b)
+app.use(
+  session({
+    secret: "secret-key",
+    resave: false,
+    saveUninitialized: false,
+    store,
+  })
+);
+app.use(passport.initialize())
+app.use(passport.session());
+
 
 // register routes
 app.use(routes);
 
+
+
+
 //register middleware
+
 app.use(notFoundHandler);
 app.use(errorHandler);
 

@@ -4,6 +4,8 @@ import { validate } from "../../middleware/validation.middleware";
 import { adminLoginSchema, adminRegistrationPostSchema } from "./admin.schema";
 import { adminLogin, adminRegistration } from "./admins.service";
 import { verifyToken } from "../../middleware/verify-token.middleware";
+import passport from "passport";
+import { log } from "console";
 export const adminsRouter: Router = express.Router();
 
 adminsRouter.get(
@@ -36,22 +38,8 @@ adminsRouter.post(
 
 adminsRouter.post(
   "/login",
-  validate(adminLoginSchema),
+[  validate(adminLoginSchema),passport.authenticate('local')],
   async (req: Request, res: Response, next: NextFunction) => {
-    const { body } = adminLoginSchema.parse(req);
-    try {
-      const data = await adminLogin(body);
-      data &&
-        res
-          .cookie("access_token", data.token, {
-            httpOnly: true,
-            maxAge: 60 * 60 * 24 * 7,
-          })
-          .status(200)
-          .json({ message: "Logged in successfully" });
-    } catch (error) {
-      res.status(401);
-      next(error);
-    }
+  res.json({status:200,message:'Login Success'})
   }
 );
