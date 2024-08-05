@@ -41,16 +41,14 @@ adminsRouter.post(
     const { body } = adminLoginSchema.parse(req);
     try {
       const data = await adminLogin(body);
-
-      // data &&  res.status(200).json({message:"Login Successful",data})
-      res
-        .cookie("access_token", data.token, {
-          httpOnly: true,
-          maxAge: 60 * 60 * 24 * 7,
-        })
-        .status(200)
-        .json({ message: "Logged in successfully" });
-      data && res.set;
+      data &&
+        res
+          .cookie("access_token", data.token, {
+            httpOnly: true,
+            maxAge: 60 * 60 * 24 * 7,
+          })
+          .status(200)
+          .json({ message: "Logged in successfully" });
     } catch (error) {
       res.status(401);
       next(error);

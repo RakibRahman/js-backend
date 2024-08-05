@@ -14,13 +14,14 @@ export const verifyToken = (
 ) => {
   const token = req.cookies.access_token;
 
+  const errorObj = { status: 403, message: "unauthorized user" };
   if (!token) {
-    return res.json({ status: 403, message: "unauthorized user" }); // Forbidden
+    return res.json(errorObj); // Forbidden
   }
 
   jwt.verify(token, env.JWT_SECRET!, (err: any, user: any) => {
     if (err) {
-      return res.json({ status: 403, message: "unauthorized user" });
+      return res.json(errorObj);
     }
     log({ user, token });
     req.body = user as never;
