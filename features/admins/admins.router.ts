@@ -1,16 +1,16 @@
 import express, { NextFunction, Request, Response, Router } from "express";
+import passport from "passport";
 import { query } from "../../db";
+import { isAuthenticated } from "../../middleware/isAuthenticated.middleware";
 import { validate } from "../../middleware/validation.middleware";
 import { adminLoginSchema, adminRegistrationPostSchema } from "./admin.schema";
-import { adminLogin, adminRegistration } from "./admins.service";
-import { verifyToken } from "../../middleware/verify-token.middleware";
-import passport from "passport";
-import { log } from "console";
+import { adminRegistration } from "./admins.service";
+
 export const adminsRouter: Router = express.Router();
 
 adminsRouter.get(
   "/",
-  verifyToken,
+  isAuthenticated,
   async (req: Request, res: Response, next) => {
     try {
       const admins = await query(`SELECT id,name,role,email FROM admins;`);
@@ -38,8 +38,27 @@ adminsRouter.post(
 
 adminsRouter.post(
   "/login",
-[  validate(adminLoginSchema),passport.authenticate('local')],
+  [validate(adminLoginSchema), passport.authenticate("local")],
   async (req: Request, res: Response, next: NextFunction) => {
-  res.json({status:200,message:'Login Success'})
+    res.json({ status: 200, message: "Login Success" });
+  }
+);
+
+adminsRouter.get("/auth/status", (req: Request, res: Response) => {
+  const data = req.user;
+  data ? res.json({ data }) : res.sendStatus(401);
+});
+
+adminsRouter.post(
+  "/auth/logout",
+  (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie(req.sessionID); // Clear the session cookie
+
+    req.logout(function (err) {
+      if (err) {
+        return next(err);
+      }
+      res.send("Logout Successful");
+    });
   }
 );

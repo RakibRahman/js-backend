@@ -7,6 +7,8 @@ import { notFoundHandler } from "./middleware/not-found.middleware";
 import cookieParser from 'cookie-parser';
 import passport from 'passport'
 import "./middleware/passport-local.middleware";
+import { PostgresStore } from "./db";
+import { passportMiddleware } from "./middleware/passport.middleware";
 const session = require("express-session");
 const store = new session.MemoryStore();
 
@@ -23,18 +25,23 @@ app.use(express.json());
 app.use(cors({
   credentials: true
 }));
+
+
 app.use(
   session({
     secret: "secret-key",
     resave: false,
-    saveUninitialized: false,
-    store,
+    saveUninitialized: true,
+    store:PostgresStore,
+    cookie:{
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      httpOnly: true,
+      secure: false
+    }
   })
 );
 app.use(passport.initialize())
 app.use(passport.session());
-
-
 // register routes
 app.use(routes);
 
@@ -42,7 +49,7 @@ app.use(routes);
 
 
 //register middleware
-
+// app.use(passportMiddleware)
 app.use(notFoundHandler);
 app.use(errorHandler);
 

@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
 import pg from "pg";
+const session = require("express-session");
+const pgSession = require("connect-pg-simple")(session);
 const { Pool } = pg;
 
 dotenv.config();
@@ -11,6 +13,11 @@ export const pool = new Pool({
   user: env.DB_USER,
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
+});
+
+export const PostgresStore = new pgSession( {
+  pool: pool,
+  tableName: "users_sessions",
 });
 
 export const initializeDatabase = async () => {
@@ -34,6 +41,14 @@ export const initializeDatabase = async () => {
     image_url TEXT,
     role TEXT
 );
+
+CREATE TABLE IF NOT EXISTS users_sessions (
+  sid VARCHAR(255) NOT NULL,
+  sess TEXT NOT NULL,
+  expire TIMESTAMP NOT NULL,
+  PRIMARY KEY (sid)
+);
+
     `);
     console.log("Tables initialized successfully");
   } catch (err) {
